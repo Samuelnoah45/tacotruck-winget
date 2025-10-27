@@ -1,0 +1,62 @@
+name: Update Winget Manifest
+
+on:
+  repository_dispatch:
+    types: [update-version]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "TacoTruck version to update to"
+        required: true
+      x64_sha256:
+        description: "SHA256 for x64 package"
+        required: true
+      arm64_sha256:
+        description: "SHA256 for arm64 package"
+        required: true
+
+jobs:
+  update-manifest:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get version from input or event
+        id: get-version
+        run: |
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+            $x64Sha256 = "${{ github.event.inputs.x64_sha256 }}"
+            $arm64Sha256 = "${{ github.event.inputs.arm64_sha256 }}"
+          } else {
+            $version = "${{ github.event.client_payload.version }}"
+            $x64Sha256 = "${{ github.event.client_payload.x64_sha256 }}"
+            $arm64Sha256 = "${{ github.event.client_payload.arm64_sha256 }}"
+          }
+
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "X64_SHA256=$x64Sha256" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "ARM64_SHA256=$arm64Sha256" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Update manifest
+        run: |
+          .\scripts\update-winget-manifest.ps1 -Version $env:VERSION -X64Sha256 $env:X64_SHA256 -Arm64Sha256 $env:ARM64_SHA256
+        shell: pwsh
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "Update TacoTruck to version ${{ env.VERSION }}"
+          title: "Update TacoTruck to version ${{ env.VERSION }}"
+          body: |
+            This PR updates the TacoTruck winget manifest to version ${{ env.VERSION }}.
+
+            Changes:
+            - Updated version to ${{ env.VERSION }}
+            - Updated download URLs
+            - Updated SHA256 hashes
+          branch: update-tacotruck-${{ env.VERSION }}
+          delete-branch: true

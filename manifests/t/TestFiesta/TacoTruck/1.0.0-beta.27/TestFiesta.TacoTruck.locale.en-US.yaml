@@ -1,0 +1,32 @@
+# Created using wingetcreate 1.5.7.0
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.5.0.schema.json
+
+PackageIdentifier: TestFiesta.TacoTruck
+PackageVersion: 1.0.0-beta.27
+PackageLocale: en-US
+Publisher: TestFiesta
+PublisherUrl: https://github.com/testfiesta
+PublisherSupportUrl: https://github.com/testfiesta/tacotruck/issues
+# PrivacyUrl:
+Author: TestFiesta
+PackageName: TacoTruck
+PackageUrl: https://github.com/testfiesta/tacotruck
+License: MIT
+LicenseUrl: https://github.com/testfiesta/tacotruck/blob/main/LICENSE
+# Copyright:
+# CopyrightUrl:
+ShortDescription: Test/QA data pipeline CLI tool
+Description: TacoTruck is a command-line interface tool designed for test and QA data pipeline management. It provides developers and QA engineers with powerful capabilities to streamline their testing workflows and data management processes.
+# Moniker:
+Tags:
+  - cli
+  - qa
+  - testing
+  - data-pipeline
+ReleaseNotes: TacoTruck CLI version 1.0.0-beta.27
+ReleaseNotesUrl: https://github.com/testfiesta/tacotruck/releases/tag/v1.0.0-beta.27
+# PurchaseUrl:
+# InstallationNotes:
+# Documentations:
+ManifestType: defaultLocale
+ManifestVersion: 1.5.0

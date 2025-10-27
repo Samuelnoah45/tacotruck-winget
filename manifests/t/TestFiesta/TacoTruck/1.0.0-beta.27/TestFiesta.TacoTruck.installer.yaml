@@ -1,0 +1,21 @@
+# Created using wingetcreate 1.5.7.0
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.5.0.schema.json
+
+PackageIdentifier: TestFiesta.TacoTruck
+PackageVersion: 1.0.0-beta.27
+InstallerType: zip
+NestedInstallerType: portable
+NestedInstallerFiles:
+  - RelativeFilePath: tacotruck.exe
+    PortableCommandAlias: tacotruck
+Commands:
+  - tacotruck
+Installers:
+  - Architecture: x64
+    InstallerUrl: https://github.com/testfiesta/tacotruck/releases/download/v1.0.0-beta.27/tacotruck-1.0.0-beta.27-win-x64.zip
+    InstallerSha256: 123456789abcdef123456789abcdef123456789abcdef123456789abcdef1234
+  - Architecture: arm64
+    InstallerUrl: https://github.com/testfiesta/tacotruck/releases/download/v1.0.0-beta.27/tacotruck-1.0.0-beta.27-win-arm64.zip
+    InstallerSha256: abcdef123456789abcdef123456789abcdef123456789abcdef123456789abcd
+ManifestType: installer
+ManifestVersion: 1.5.0

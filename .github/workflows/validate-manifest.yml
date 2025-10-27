@@ -1,0 +1,55 @@
+name: Validate Manifest
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "manifests/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "manifests/**"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Windows Package Manager Manifest Validation
+        run: |
+          # Install winget-create
+          winget install Microsoft.WingetCreate --accept-source-agreements --accept-package-agreements
+
+          # Add winget-create to PATH
+          $env:Path += ";$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Microsoft.WingetCreate_8wekyb3d8bbwe\wingetcreate.exe"
+          echo "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Microsoft.WingetCreate_8wekyb3d8bbwe" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        shell: pwsh
+
+      - name: Validate manifests
+        run: |
+          $manifestDirs = Get-ChildItem -Path ".\manifests\t\TestFiesta\TacoTruck" -Directory
+
+          foreach ($dir in $manifestDirs) {
+            $version = $dir.Name
+            Write-Host "Validating manifest for version $version..."
+            
+            $manifestPath = Join-Path $dir.FullName "TestFiesta.TacoTruck.installer.yaml"
+            
+            if (Test-Path $manifestPath) {
+              wingetcreate validate $dir.FullName
+              
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "Validation failed for version $version"
+                exit 1
+              }
+              
+              Write-Host "Validation passed for version $version"
+            } else {
+              Write-Error "Manifest file not found for version $version"
+              exit 1
+            }
+          }
+        shell: pwsh
