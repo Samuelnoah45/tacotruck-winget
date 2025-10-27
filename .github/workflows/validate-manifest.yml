@@ -1,4 +1,4 @@
-name: Validate Manifest
+name: Validate Winget Manifest
 
 on:
   push:
@@ -20,36 +20,32 @@ jobs:
 
       - name: Setup Windows Package Manager Manifest Validation
         run: |
-          # Install winget-create
-          winget install Microsoft.WingetCreate --accept-source-agreements --accept-package-agreements
-
-          # Add winget-create to PATH
-          $env:Path += ";$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Microsoft.WingetCreate_8wekyb3d8bbwe\wingetcreate.exe"
-          echo "$env:LOCALAPPDATA\Microsoft\WinGet\Packages\Microsoft.WingetCreate_8wekyb3d8bbwe" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # Install winget-create if not already installed
+          if (-not (Get-Command winget-create -ErrorAction SilentlyContinue)) {
+            Write-Host "Installing Windows Package Manager Manifest Creator..."
+            # You may need to adjust this depending on how you want to install winget-create
+            # Option 1: Use Microsoft.WinGet.Client PowerShell module
+            Install-Module Microsoft.WinGet.Client -Force -AllowPrerelease
+          }
         shell: pwsh
 
       - name: Validate manifests
         run: |
+          # Get all manifest version directories
           $manifestDirs = Get-ChildItem -Path ".\manifests\t\TestFiesta\TacoTruck" -Directory
 
           foreach ($dir in $manifestDirs) {
             $version = $dir.Name
             Write-Host "Validating manifest for version $version..."
             
-            $manifestPath = Join-Path $dir.FullName "TestFiesta.TacoTruck.installer.yaml"
+            # Use the correct validation command
+            & winget validate --manifest "$($dir.FullName)"
             
-            if (Test-Path $manifestPath) {
-              wingetcreate validate $dir.FullName
-              
-              if ($LASTEXITCODE -ne 0) {
-                Write-Error "Validation failed for version $version"
-                exit 1
-              }
-              
-              Write-Host "Validation passed for version $version"
-            } else {
-              Write-Error "Manifest file not found for version $version"
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Validation failed for version $version"
               exit 1
+            } else {
+              Write-Host "Validation successful for version $version"
             }
           }
         shell: pwsh
